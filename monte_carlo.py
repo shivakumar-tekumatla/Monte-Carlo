@@ -4,40 +4,44 @@ import matplotlib.pyplot as plt
 
 class Env:
     # defining environment
-    def __init__(self,all_actions,all_states) -> None:
-        self.all_actions = all_actions
-        self.all_states = all_states 
+    def __init__(self,actions,states) -> None:
+        self.actions = actions
+        self.states = states 
         pass
-
-    def actions(self):
-        return self.all_actions
-    def states(self):
-        return self.all_states
 
     def is_terminal(self,state):
         # checks if a state is terminal
         # find a better way to do this 
-        if state  in [self.all_states[0],self.all_states[-1]]:
+        if state  in [self.states[0],self.states[-1]]:
             return True
         return False 
 
-    def transition(self,state,action):
+    def next_state(self,state,action):
         # defines the transition of the environment for a given action
         # Basically returns the next state for a given action 
         if self.is_terminal(state):
             return state 
         return state+action 
 
+    def reward(self,state,action):
+        # for a given state and action , what is the collected reward ?
+        next_state = self.next_state(state,action)
+        if next_state==self.states[-1]: # if the next state is collecting the used can 
+            r = 5 
+        elif next_state == self.states[0]: # if the next state is charging station 
+            r =1 
+        else:
+            r = 0  # for any other thing 
+        return r
 
     def reset(self):
         # this functions resets the environment , by choosing a random initial state and random action 
-        return np.random.choice(self.states()),np.random.choice(self.actions())
+        return np.random.choice(self.states),np.random.choice(self.actions)
 
 
 class MC:
     def __init__(self,env) -> None:
-        print(env.reset())
-        
+        self.env = env  # this is the defined environment 
         pass
 
 
