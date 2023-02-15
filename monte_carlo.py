@@ -1,6 +1,7 @@
 import numpy as np  
 import matplotlib.pyplot as plt 
 from statistics import mean
+import random 
 
 class Env:
     # defining environment
@@ -19,9 +20,18 @@ class Env:
     def next_state(self,state,action):
         # defines the transition of the environment for a given action
         # Basically returns the next state for a given action at a given state 
+        # this is defined as stochastic 
+        # for a given action, robot moves in that direction with a probability of 0.8
+        # but due to slippery floor, there can be slippages 
+        # this can cause the robot to stay in the same location with the probability of 0.15
+        # move in the opposite direction with a probability of 0.05 
+        # this means , the action is either 1,-1 or zero
+        actions = [action , 0*action , -1*action]
+        probabilities = (0.8,0.15,0.05) # these are the probabilities of each possible action 
+        actual_action = random.choices(actions, weights=probabilities, k=1)[0] 
         if self.is_terminal(state):
             return state 
-        return state+action 
+        return state+actual_action 
 
     def reward(self,next_state):
         # for a given state and action , what is the collected reward ?
@@ -63,9 +73,9 @@ class MonteCarlo:
     def initialize(self):
         # initializing policy,action value 
         policy = {state:np.random.choice(self.env.actions) for state in self.env.states} # random policy 
-        action_value = {state:{action:0 for action in self.env.actions} for state in self.env.states}
+        Q = {state:{action:0 for action in self.env.actions} for state in self.env.states}
         Returns = {state:{action:[] for action in self.env.actions} for state in self.env.states}
-        return policy,action_value,Returns 
+        return policy,Q,Returns 
     
     def ES(self,n_episodes):
         # Exploring starts 
@@ -77,19 +87,19 @@ class MonteCarlo:
             # reset the environment 
             # Choose state and action randomly such that all pair of probability >0  
             state,action = self.env.reset()
-            print(state,action)
+            # print(state,action)
             episode = self.env.generate_episode(state,action,policy) # but this episode can have loops and take forever to stop , and may not stop ever 
-            print("Episode",episode)
-            # G = 0 
-            # appearances = []
-            # for St,At,Rt_1 in episode: # loop for each step of the episode 
-            #     G = self.gamma*G + Rt_1 
-            #     # unless St and At appears in the 
-            #     if (St,At) not in  appearances:
-            #         Returns[St][At].append(G)
-            #         Q[St][At] = mean(Returns[St][At])
-            #         policy[St] = max(Q[St], key=Q[St].get, default=None)
-            #     appearances.append((St,At))
+            # print("Episode",episode)
+            G = 0 
+            appearances = []
+            for St,At,Rt_1 in episode: # loop for each step of the episode 
+                G = self.gamma*G + Rt_1 
+                # unless St and At appears in the 
+                if (St,At) not in  appearances:
+                    Returns[St][At].append(G)
+                    Q[St][At] = mean(Returns[St][At])
+                    policy[St] = max(Q[St], key=Q[St].get, default=None)
+                appearances.append((St,At))
 
         return policy,Q,Returns
 
@@ -100,9 +110,13 @@ def main():
     all_states = [i for i in range(6)]
     env = Env(all_actions,all_states)
     gamma = 0.8
+    n_episodes = 10000 # number of episodes 
     mc = MonteCarlo(gamma,env)
-    print(mc.ES(3))
+    print(mc.ES(n_episodes))
     pass
 
 if __name__ == "__main__":
     main()
+
+    {0: 1, 1: -1, 2: 1, 3: -1, 4: 1, 5: 1}
+    {0: 1, 1: -1, 2: -1, 3: -1, 4: 1, 5: -1}
