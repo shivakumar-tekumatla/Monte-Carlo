@@ -82,7 +82,7 @@ class MonteCarlo:
         # n_episodes - Number of episodes 
 
         policy,Q,Returns = self.initialize()
-        print(policy)
+        print("Initial Policy",policy)
         for i in range(n_episodes):
             # reset the environment 
             # Choose state and action randomly such that all pair of probability >0  
@@ -91,17 +91,47 @@ class MonteCarlo:
             episode = self.env.generate_episode(state,action,policy) # but this episode can have loops and take forever to stop , and may not stop ever 
             # print("Episode",episode)
             G = 0 
-            appearances = []
-            for St,At,Rt_1 in episode: # loop for each step of the episode 
+            appearances = [(i[0],i[1]) for i in episode] # store only states and actions 
+            episode.reverse() # we need trace steps in the backward direction 
+            for i,step in enumerate(episode):
+                St,At,Rt_1 = step 
                 G = self.gamma*G + Rt_1 
-                # unless St and At appears in the 
-                if (St,At) not in  appearances:
+
+                if (St,At) not in appearances[:-(i+1)]:
                     Returns[St][At].append(G)
                     Q[St][At] = mean(Returns[St][At])
-                    policy[St] = max(Q[St], key=Q[St].get, default=None)
-                appearances.append((St,At))
+                    policy[St] = max(Q[St], key=Q[St].get, default=None) # getting the action with maximum Q 
 
+            # for St,At,Rt_1 in episode: # loop for each step of the episode. Rt_1 is R_t+1
+            #     G = self.gamma*G + Rt_1 
+            #     # unless St and At appears in the 
+            #     if (St,At) not in  appearances:
+            #         Returns[St][At].append(G)
+            #         Q[St][At] = mean(Returns[St][At])
+            #         policy[St] = max(Q[St], key=Q[St].get, default=None) # getting the action with maximum Q 
+            #     appearances.append((St,At))
+            #     # # print("Step",(St,At,Rt_1))
+            #     # print("Q",Q)
+            print("policy",policy)
+                
+            #     # input()
         return policy,Q,Returns
+
+    def on_policy_mc_control(self,epsilon,n_episodes):
+        # epsilon is used for epsilon soft policy 
+        policy,Q,Returns = self.initialize()
+        for i in range(n_episodes):
+            # reset the environment 
+            # Choose state and action randomly such that all pair of probability >0  
+            state,action = self.env.reset()
+            # print(state,action)
+            episode = self.env.generate_episode(state,action,policy) # but this episode can have loops and take forever to stop , and may not stop ever 
+            print("Episode",episode)
+            G = 0 
+
+
+
+        return 
 
 
 
@@ -109,14 +139,14 @@ def main():
     all_actions = [-1,1]
     all_states = [i for i in range(6)]
     env = Env(all_actions,all_states)
-    gamma = 0.8
-    n_episodes = 10000 # number of episodes 
+    gamma = 0.9 #0.5
+    n_episodes = 100 # number of episodes 
     mc = MonteCarlo(gamma,env)
-    print(mc.ES(n_episodes))
-    pass
+    policy,Q,Returns= mc.ES(n_episodes)
+    print(policy)
 
 if __name__ == "__main__":
     main()
 
-    {0: 1, 1: -1, 2: 1, 3: -1, 4: 1, 5: 1}
-    {0: 1, 1: -1, 2: -1, 3: -1, 4: 1, 5: -1}
+    # {0: 1, 1: -1, 2: 1, 3: -1, 4: 1, 5: 1}
+    # {0: 1, 1: -1, 2: -1, 3: -1, 4: 1, 5: -1}
