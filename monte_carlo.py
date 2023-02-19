@@ -1,7 +1,9 @@
 import numpy as np  
 import matplotlib.pyplot as plt 
 from statistics import mean
+from copy import deepcopy
 import random 
+random.seed(0)
 
 class Env:
     # defining environment
@@ -64,7 +66,7 @@ class Env:
 
     def reset(self):
         # this function resets the environment , by choosing a random initial state and random action 
-        return np.random.choice(self.states),np.random.choice(self.actions)
+        return random.choice(self.states),random.choice(self.actions)
 
 
 class MonteCarlo:
@@ -89,7 +91,7 @@ class MonteCarlo:
         policy = {state:{action:0 for action in self.env.actions} for state in self.env.states}
         for state in self.env.states:
             temp = list(probabilities.values())
-            np.random.shuffle(temp)
+            random.shuffle(temp)
             policy[state] = dict(zip(probabilities, temp))
 
         Q = {state:{action:0 for action in self.env.actions} for state in self.env.states}
@@ -106,69 +108,72 @@ class MonteCarlo:
         return policy 
 
     def state_value(self,policy,Q):
-        # V = {}
-        # for state in self.states:
-        #     s = 0 
-        #     for action in policy[state]:
-        #         s+= policy[state][action]*Q[state][action]
-        #     V[state] = s
         V = {state:sum([policy[state][action]*Q[state][action] for action in policy[state]]) for state in self.env.states }
         return V 
+
+    def plot_state_value(self,Vs,title):
+        n = len(Vs)
+
+        episodes = [i+1 for i in range(n)]
+        ys =[list(V.values()) for V in Vs]
+        legend = ["state "+str(key) for key in Vs[0]]
+        plt.plot(episodes,ys)
+        plt.title(title)
+        plt.xscale('log',base=10)
+        plt.xlabel("Episodes (log scale)")
+        plt.ylabel("State Value for each state")
+        plt.legend(legend, loc='lower right')
+        plt.show()
     
-    # def ES(self,n_episodes):
-    #     # Exploring starts 
-    #     # n_episodes - Number of episodes 
+    def plot_action_value(self,Qs,title):
+        # for Q in Qs:
+        #     print(Q)
+        #     input()
+        n = len(Qs)
+        episodes = [i+1 for i in range(n)]
+        ys =[]
+        for Q in Qs:
+            y=[]
+            for q in Q:
+                for s in Q[q]:
+                    y.append(Q[q][s])
+            ys.append(y)
+        # print(ys)
+        pairs =[]
+        for s in Qs[0]:
+            for a in Qs[0][s]:
+                pairs.append((s,a))
 
-    #     policy,Q,Returns = self.initialize()
-    #     print("Initial Policy",policy)
-    #     for i in range(n_episodes):
-    #         # reset the environment 
-    #         # Choose state and action randomly such that all pair of probability >0  
-    #         state,action = self.env.reset()
-    #         # print(state,action)
-    #         episode = self.env.generate_episode(state,action,policy) # but this episode can have loops and take forever to stop , and may not stop ever 
-    #         # print("Episode",episode)
-    #         G = 0 
-    #         appearances = [(i[0],i[1]) for i in episode] # store only states and actions 
-    #         episode.reverse() # we need trace steps in the backward direction 
-    #         for i,step in enumerate(episode):
-    #             St,At,Rt_1 = step 
-    #             G = self.gamma*G + Rt_1 
+        legend = [str(pair) for pair in pairs]
+        plt.plot(episodes,ys)
+        plt.title(title)
 
-    #             if (St,At) not in appearances[:-(i+1)]:
-    #                 Returns[St][At].append(G)
-    #                 Q[St][At] = mean(Returns[St][At])
-    #                 A_star = max(Q[St], key=Q[St].get, default=None) # getting the action with maximum Q 
-    #                 policy = self.update_policy(policy,St,A_star) 
-    #                 # update the policy 
+        plt.xscale('log',base=10)
+        plt.xlabel("Episodes (log scale)")
+        plt.ylabel("Action Value for each state")
+        plt.legend(legend, loc='lower right')
+        plt.show()
 
-    #         # for St,At,Rt_1 in episode: # loop for each step of the episode. Rt_1 is R_t+1
-    #         #     G = self.gamma*G + Rt_1 
-    #         #     # unless St and At appears in the 
-    #         #     if (St,At) not in  appearances:
-    #         #         Returns[St][At].append(G)
-    #         #         Q[St][At] = mean(Returns[St][At])
-    #         #         policy[St] = max(Q[St], key=Q[St].get, default=None) # getting the action with maximum Q 
-    #         #     appearances.append((St,At))
-    #         #     # # print("Step",(St,At,Rt_1))
-    #         print("Q",Q)
-    #         print("policy",policy)
-    #         print()
-                
-    #         #     # input()
-    #     return policy,Q,Returns
+            
+
 
     def on_policy_mc_control(self,n_episodes,epsilon=0):
         # epsilon is used for epsilon soft policy , and if it is zero , on-policy control is same as Exploring starts 
         policy,Q,Returns = self.initialize(epsilon)
+        print("Initial Policy",policy)
+        Vs =[]
+        V_stars = [] 
+        Qs = []
         # policy = 
         for i in range(n_episodes):
+            # print("Q",Q)
+            # Qs.append(Q.copy())
             # reset the environment 
             # Choose state and action randomly such that all pair of probability >0  
             state,action = self.env.reset()
             # print(state,action)
             episode = self.env.generate_episode(state,action,policy) # but this episode can have loops and take forever to stop , and may not stop ever 
-            print("Episode",episode)
+            # print("Episode",episode)
             G = 0 
             appearances = [(i[0],i[1]) for i in episode] # store only states and actions 
             episode.reverse() # we need trace steps in the backward direction 
@@ -180,13 +185,29 @@ class MonteCarlo:
                     Q[St][At] = mean(Returns[St][At])
                     A_star = max(Q[St], key=Q[St].get, default=None) # getting the action with maximum Q 
                     policy = self.update_policy(policy,St,A_star,epsilon)
-                    V = self.state_value(policy,Q)
+            
+            # input("_____")
+            Qs.append(deepcopy(Q))
+            V_star = {state:max(Q[state].values()) for state in Q}
+            V_stars.append(deepcopy(V_star))
+            # print(Qs)
+            V = self.state_value(policy,Q)
+            Vs.append(deepcopy(V))
+            # Qs[i] = Q
 
-            print("Q",Q)
-            print("policy",policy)
-            print("State value ", V)
-            print()
+        # print("Q",Q)
+            # print("policy",policy)
+            # print("State value ", V)
+            # print()
         # V = self.state_value(policy,Q)
+        if epsilon ==0:
+            add_title = "For Epsilon Start"
+        else:
+            add_title = "For On-Policy First Visit MC Control"
+
+        self.plot_state_value(V_stars,"Evolution of Optimal State Values over the Episodes "+add_title)
+        self.plot_state_value(Vs , "Evolution of the State Values over the Episodes "+add_title)
+        self.plot_action_value(Qs,"Evolution of the Action Values over the Episodes "+add_title)
         return policy,Q,Returns,V 
 
 
@@ -196,10 +217,14 @@ def main():
     all_states = [i for i in range(6)]
     env = Env(all_actions,all_states)
     gamma = 0.9 #0.5
-    n_episodes = 100 # number of episodes 
+    n_episodes = 1000 # number of episodes 
     mc = MonteCarlo(gamma,env)
-    policy,Q,Returns,V= mc.on_policy_mc_control(n_episodes,epsilon=0)
-    print(V)
+    policy,Q,Returns,V= mc.on_policy_mc_control(n_episodes,epsilon=0) # exploring starts 
+    print("Final Policy ",policy)
+    print("State Value  ",V)
+    policy,Q,Returns,V= mc.on_policy_mc_control(n_episodes,epsilon=0.5) # on-policy control 
+    print("Final Policy ",policy)
+    print("State Value  ",V)
 
 if __name__ == "__main__":
     main()
