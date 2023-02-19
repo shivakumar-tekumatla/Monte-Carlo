@@ -15,7 +15,7 @@ Don't worry about any policy at the terminal states
 
 <img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/ES_action_value.png" width="700">
 
-<img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/ES_action_value_star.png" width="700">
+<img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/ES_state_value_star.png" width="700">
 
 <img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/ES_state_value.png" width="700">
 
@@ -30,3 +30,9 @@ Don't worry about any policy at the terminal states
 Don't worry about any policy at the terminal states 
 
 ### Result Plots 
+
+<img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/OP_MC_action_value.png" width="700">
+
+<img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/OP_MC_state_value_star.png" width="700">
+
+<img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/OP_MC_state_value.png" width="700">
