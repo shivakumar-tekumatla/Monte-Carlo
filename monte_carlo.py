@@ -164,10 +164,7 @@ class MonteCarlo:
         Vs =[]
         V_stars = [] 
         Qs = []
-        # policy = 
         for i in range(n_episodes):
-            # print("Q",Q)
-            # Qs.append(Q.copy())
             # reset the environment 
             # Choose state and action randomly such that all pair of probability >0  
             state,action = self.env.reset()
@@ -185,21 +182,13 @@ class MonteCarlo:
                     Q[St][At] = mean(Returns[St][At])
                     A_star = max(Q[St], key=Q[St].get, default=None) # getting the action with maximum Q 
                     policy = self.update_policy(policy,St,A_star,epsilon)
-            
-            # input("_____")
+
             Qs.append(deepcopy(Q))
             V_star = {state:max(Q[state].values()) for state in Q}
             V_stars.append(deepcopy(V_star))
-            # print(Qs)
             V = self.state_value(policy,Q)
             Vs.append(deepcopy(V))
-            # Qs[i] = Q
 
-        # print("Q",Q)
-            # print("policy",policy)
-            # print("State value ", V)
-            # print()
-        # V = self.state_value(policy,Q)
         if epsilon ==0:
             add_title = "For Epsilon Start"
         else:
@@ -219,9 +208,11 @@ def main():
     gamma = 0.9 #0.5
     n_episodes = 1000 # number of episodes 
     mc = MonteCarlo(gamma,env)
+    print("Epsilon Start")
     policy,Q,Returns,V= mc.on_policy_mc_control(n_episodes,epsilon=0) # exploring starts 
     print("Final Policy ",policy)
     print("State Value  ",V)
+    print("On-Policy First Visit MC Control")
     policy,Q,Returns,V= mc.on_policy_mc_control(n_episodes,epsilon=0.5) # on-policy control 
     print("Final Policy ",policy)
     print("State Value  ",V)
