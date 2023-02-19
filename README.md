@@ -13,6 +13,12 @@ Don't worry about any policy at the terminal states
 
 ### Result Plots 
 
+<img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/ES_action_value.png" width="700">
+
+<img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/ES_action_value_star.png" width="700">
+
+<img src="https://github.com/shivakumar-tekumatla/Monte-Carlo/blob/main/Results/ES_state_value.png" width="700">
+
 ## On-Policy First Visit MC Control
 
 ```Initial Policy {0: {-1: 0.25, 1: 0.75}, 1: {-1: 0.75, 1: 0.25}, 2: {-1: 0.25, 1: 0.75}, 3: {-1: 0.25, 1: 0.75}, 4: {-1: 0.75, 1: 0.25}, 5: {-1: 0.25, 1: 0.75}}```
