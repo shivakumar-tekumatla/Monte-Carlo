@@ -1,5 +1,5 @@
 # Monte-Carlo
-Monte Carlo with exploring start and on-policy first visit 
+Monte Carlo with exploring start and on-policy first visit for stochastic cleaning-robot MDP problem. This is Example 2.2 of the book “Reinforcement learning and dynamic programming using function approximators” 
 
 ## Exploring Starts 
 
